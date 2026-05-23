@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tejas Shiva Kumar — Software Engineer</title>
+  <meta name="description" content="Software Engineer & AI/ML Researcher. MSc Computing at Dublin City University. Backend, GNN research, Python, .NET." />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <link rel="stylesheet" href="./style.css" />
+</head>
+<body>
+
+  <!-- ═══════════════════════════════════════════════════ HEADER -->
+  <header class="header" id="header">
+    <nav class="nav container">
+      <a href="#home" class="nav-logo">TSK<span class="logo-dot">.</span></a>
+
+      <ul class="nav-menu" id="nav-menu">
+        <li><a href="#home"         class="nav-link">Home</a></li>
+        <li><a href="#about"        class="nav-link">About</a></li>
+        <li><a href="#experience"   class="nav-link">Experience</a></li>
+        <li><a href="#skills"       class="nav-link">Skills</a></li>
+        <li><a href="#projects"     class="nav-link">Projects</a></li>
+        <li><a href="#achievements" class="nav-link">Awards</a></li>
+        <li><a href="#contact"      class="nav-link">Contact</a></li>
+      </ul>
+
+      <div class="nav-actions">
+        <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme" title="Toggle light/dark mode">
+          <i class="fa-solid fa-sun"  id="icon-light" style="display:none"></i>
+          <i class="fa-solid fa-moon" id="icon-dark"></i>
+        </button>
+        <button class="nav-hamburger" id="nav-hamburger" aria-label="Open menu">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
+    </nav>
+  </header>
+
+  <!-- ══════════════════════════════════════════════════════ HERO -->
+  <section id="home" class="hero">
+    <canvas id="hero-canvas"></canvas>
+
+    <div class="hero-inner container">
+      <div class="hero-badge reveal">
+        <span class="badge-dot"></span> Open to opportunities
+      </div>
+
+      <h1 class="hero-name reveal">Tejas<br />Shiva Kumar</h1>
+
+      <p class="hero-role reveal">
+        I build&nbsp;<span class="typewriter" id="typewriter"></span><span class="cursor">|</span>
+      </p>
+
+      <p class="hero-bio reveal" id="hero-bio"></p>
+
+      <div class="hero-btns reveal">
+        <a href="#" id="resume-btn" class="btn btn-primary">
+          <i class="fa-solid fa-file-arrow-down"></i> Download CV
+        </a>
+        <a href="#contact" class="btn btn-ghost">
+          Get In Touch <i class="fa-solid fa-arrow-right"></i>
+        </a>
+      </div>
+
+      <div class="hero-socials reveal" id="hero-socials"></div>
+    </div>
+
+    <div class="hero-scroll">
+      <span>scroll</span>
+      <div class="scroll-bar"></div>
+    </div>
+  </section>
+
+  <!-- ════════════════════════════════════════════════════ ABOUT -->
+  <section id="about" class="section">
+    <div class="container">
+      <div class="section-header reveal">
+        <span class="section-tag">01 — About</span>
+        <h2 class="section-title">Who I Am</h2>
+      </div>
+
+      <div class="about-grid">
+        <div class="about-photo-col reveal-left">
+          <div class="photo-wrap">
+            <div class="photo-card">
+              <img src="./images/tejas.png" alt="Tejas Shiva Kumar" class="photo-img" />
+            </div>
+            <div class="photo-location">
+              <i class="fa-solid fa-location-dot"></i> Dublin, Ireland
+            </div>
+            <div class="photo-avail">
+              <span class="avail-dot"></span> Available for hire
+            </div>
+          </div>
+        </div>
+
+        <div class="about-text-col reveal-right">
+          <p class="about-bio" id="about-bio"></p>
+
+          <div class="about-meta">
+            <div class="meta-row">
+              <span class="meta-label"><i class="fa-solid fa-envelope"></i> Email</span>
+              <a href="mailto:tejasshivakumar104@gmail.com" class="meta-value link">tejasshivakumar104@gmail.com</a>
+            </div>
+            <div class="meta-row">
+              <span class="meta-label"><i class="fa-solid fa-phone"></i> Phone</span>
+              <span class="meta-value">+353 894 895 290</span>
+            </div>
+            <div class="meta-row">
+              <span class="meta-label"><i class="fa-solid fa-graduation-cap"></i> Education</span>
+              <span class="meta-value">MSc Computing, DCU</span>
+            </div>
+            <div class="meta-row">
+              <span class="meta-label"><i class="fa-solid fa-map-pin"></i> Location</span>
+              <span class="meta-value">Dublin, Ireland</span>
+            </div>
+          </div>
+
+          <div class="about-stats" id="about-stats"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════ EXPERIENCE -->
+  <section id="experience" class="section section-alt">
+    <div class="container">
+      <div class="section-header reveal">
+        <span class="section-tag">02 — Experience</span>
+        <h2 class="section-title">Education &amp; Work</h2>
+      </div>
+
+      <div class="timeline" id="timeline"></div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════════ SKILLS -->
+  <section id="skills" class="section">
+    <div class="container">
+      <div class="section-header reveal">
+        <span class="section-tag">03 — Skills</span>
+        <h2 class="section-title">Tech Stack</h2>
+      </div>
+
+      <div class="skills-grid" id="skills-grid"></div>
+    </div>
+  </section>
+
+  <!-- ════════════════════════════════════════════════ PROJECTS -->
+  <section id="projects" class="section section-alt">
+    <div class="container">
+      <div class="section-header reveal">
+        <span class="section-tag">04 — Projects</span>
+        <h2 class="section-title">Featured Work</h2>
+      </div>
+
+      <div class="projects-list" id="projects-list"></div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════ ACHIEVEMENTS -->
+  <section id="achievements" class="section">
+    <div class="container">
+      <div class="section-header reveal">
+        <span class="section-tag">05 — Achievements</span>
+        <h2 class="section-title">Awards &amp; Certs</h2>
+      </div>
+
+      <div class="ach-row">
+        <div class="ach-col">
+          <h3 class="ach-col-title"><i class="fa-solid fa-trophy"></i> Competitions</h3>
+          <div class="hackathons-list" id="hackathons-list"></div>
+        </div>
+
+        <div class="ach-col">
+          <h3 class="ach-col-title"><i class="fa-solid fa-certificate"></i> Certifications</h3>
+          <div class="certs-list" id="certs-list"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════════ CONTACT -->
+  <section id="contact" class="section section-alt">
+    <div class="container">
+      <div class="section-header reveal">
+        <span class="section-tag">06 — Contact</span>
+        <h2 class="section-title">Get In Touch</h2>
+        <p class="section-sub">Interested in working together? Send me a message and I'll get back to you.</p>
+      </div>
+
+      <div class="contact-grid">
+        <div class="contact-info reveal-left">
+          <h3>Let's connect</h3>
+          <p>Whether it's a job opportunity, collaboration, or just a conversation — I'm always open. Based in Dublin, available globally for remote roles.</p>
+
+          <div class="contact-links" id="contact-links"></div>
+        </div>
+
+        <form class="contact-form reveal-right" id="contact-form" novalidate>
+          <div class="form-row">
+            <div class="form-field">
+              <label for="cf-name">Name</label>
+              <input type="text" id="cf-name" name="name" placeholder="Your name" required />
+            </div>
+            <div class="form-field">
+              <label for="cf-email">Email</label>
+              <input type="email" id="cf-email" name="email" placeholder="you@company.com" required />
+            </div>
+          </div>
+          <div class="form-field">
+            <label for="cf-subject">Subject</label>
+            <input type="text" id="cf-subject" name="subject" placeholder="Job opportunity / Collaboration / Other" />
+          </div>
+          <div class="form-field">
+            <label for="cf-message">Message</label>
+            <textarea id="cf-message" name="message" rows="5" placeholder="Tell me more..." required></textarea>
+          </div>
+          <button type="submit" class="btn btn-primary full-width">
+            <i class="fa-solid fa-paper-plane"></i> Send Message
+          </button>
+          <div class="form-success" id="form-success">
+            <i class="fa-solid fa-circle-check"></i> Message sent! I'll get back to you soon.
+          </div>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════════ FOOTER -->
+  <footer class="footer">
+    <div class="container footer-inner">
+      <p class="footer-logo">TSK<span class="logo-dot">.</span></p>
+      <p class="footer-copy" id="footer-copy"></p>
+      <div class="footer-socials" id="footer-socials"></div>
+    </div>
+  </footer>
+
+  <a href="#home" class="back-top" id="back-top" aria-label="Back to top">
+    <i class="fa-solid fa-arrow-up"></i>
+  </a>
+
+  <script src="./config.js"></script>
+  <script src="./script.js"></script>
+</body>
+</html>
