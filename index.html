@@ -1,251 +1,344 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Tejas Shiva Kumar — Software Engineer</title>
-  <meta name="description" content="Software Engineer & AI/ML Researcher. MSc Computing at Dublin City University. Backend, GNN research, Python, .NET." />
-
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
-  <link rel="stylesheet" href="./style.css" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Tejas Shiva Kumar | Software Engineer</title>
+  <meta name="description" content="Software engineer in Dublin working on AI/ML and Java backends. MSc Computing (Data Analytics), DCU. AICS 2026 poster on graph neural networks for road crack topology.">
+  <meta property="og:title" content="Tejas Shiva Kumar | Software Engineer">
+  <meta property="og:description" content="AI/ML and Java backend engineer in Dublin. Draw a crack and watch it become a graph.">
+  <meta property="og:image" content="https://tejasshivakumar.vercel.app/Images/tejas-520.png">
+  <meta name="theme-color" content="#FFC72C">
+  <link rel="icon" href="./favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Overpass:wght@400;600;700;800&family=Big+Shoulders+Display:wght@600;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./style.css">
+  <script>
+    try { var t = localStorage.getItem('theme'); if (t) document.documentElement.dataset.theme = t; } catch (e) {}
+  </script>
 </head>
 <body>
+  <a class="skip" href="#work">Skip to projects</a>
 
-  <!-- ═══════════════════════════════════════════════════ HEADER -->
-  <header class="header" id="header">
-    <nav class="nav container">
-      <a href="#home" class="nav-logo">TSK<span class="logo-dot">.</span></a>
-
-      <ul class="nav-menu" id="nav-menu">
-        <li><a href="#home"         class="nav-link">Home</a></li>
-        <li><a href="#about"        class="nav-link">About</a></li>
-        <li><a href="#experience"   class="nav-link">Experience</a></li>
-        <li><a href="#skills"       class="nav-link">Skills</a></li>
-        <li><a href="#projects"     class="nav-link">Projects</a></li>
-        <li><a href="#achievements" class="nav-link">Awards</a></li>
-        <li><a href="#contact"      class="nav-link">Contact</a></li>
-      </ul>
-
-      <div class="nav-actions">
-        <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme" title="Toggle light/dark mode">
-          <i class="fa-solid fa-sun"  id="icon-light" style="display:none"></i>
-          <i class="fa-solid fa-moon" id="icon-dark"></i>
-        </button>
-        <button class="nav-hamburger" id="nav-hamburger" aria-label="Open menu">
-          <span></span><span></span><span></span>
+  <header class="top">
+    <div class="wrap top-inner">
+      <a class="logo" href="#top" aria-label="Back to top">TSK</a>
+      <nav class="nav" aria-label="Sections">
+        <a href="#work">Work</a>
+        <a href="#experience">Experience</a>
+        <a href="#skills">Skills</a>
+        <a href="#contact">Contact</a>
+      </nav>
+      <div class="top-actions">
+        <a class="btn btn-small btn-yellow" href="./Resume/TEJAS_SHIVA_KUMAR_RESUME.pdf" target="_blank" rel="noopener">CV</a>
+        <button class="theme" id="theme" type="button" aria-label="Switch colour theme">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a9 9 0 1 0 9 9 7 7 0 0 1-9-9z"/></svg>
         </button>
       </div>
-    </nav>
+    </div>
   </header>
 
-  <!-- ══════════════════════════════════════════════════════ HERO -->
-  <section id="home" class="hero">
-    <canvas id="hero-canvas"></canvas>
-
-    <div class="hero-inner container">
-      <div class="hero-badge reveal">
-        <span class="badge-dot"></span> Open to opportunities
-      </div>
-
-      <h1 class="hero-name reveal">Tejas<br />Shiva Kumar</h1>
-
-      <p class="hero-role reveal">
-        I build&nbsp;<span class="typewriter" id="typewriter"></span><span class="cursor">|</span>
-      </p>
-
-      <p class="hero-bio reveal" id="hero-bio"></p>
-
-      <div class="hero-btns reveal">
-        <a href="#" id="resume-btn" class="btn btn-primary">
-          <i class="fa-solid fa-file-arrow-down"></i> Download CV
-        </a>
-        <a href="#contact" class="btn btn-ghost">
-          Get In Touch <i class="fa-solid fa-arrow-right"></i>
-        </a>
-      </div>
-
-      <div class="hero-socials reveal" id="hero-socials"></div>
-    </div>
-
-    <div class="hero-scroll">
-      <span>scroll</span>
-      <div class="scroll-bar"></div>
-    </div>
-  </section>
-
-  <!-- ════════════════════════════════════════════════════ ABOUT -->
-  <section id="about" class="section">
-    <div class="container">
-      <div class="section-header reveal">
-        <span class="section-tag">01 — About</span>
-        <h2 class="section-title">Who I Am</h2>
-      </div>
-
-      <div class="about-grid">
-        <div class="about-photo-col reveal-left">
-          <div class="photo-wrap">
-            <div class="photo-card">
-              <img src="./Images/tejas.png" alt="Tejas Shiva Kumar" class="photo-img" />
-            </div>
-            <div class="photo-location">
-              <i class="fa-solid fa-location-dot"></i> Dublin, Ireland
-            </div>
-            <div class="photo-avail">
-              <span class="avail-dot"></span> Available for hire
-            </div>
+  <main id="top">
+    <!-- HERO -->
+    <section class="hero">
+      <div class="wrap hero-grid">
+        <div class="hero-text">
+          <p class="status"><span class="dot" aria-hidden="true"></span> Open to graduate SWE and AI/ML roles in Ireland</p>
+          <h1 class="name">Tejas<br>Shiva Kumar</h1>
+          <div class="lane" aria-hidden="true"></div>
+          <p class="role">Software engineer building AI/ML systems and Java backends.</p>
+          <p class="lede">MSc Computing (Data Analytics) at Dublin City University, 2:1. My practicum turned photos of road cracks into graphs and taught neural networks to predict where they connect. It was accepted as a poster at AICS 2026.</p>
+          <div class="cta">
+            <a class="btn btn-ink" href="#work">See my projects</a>
+            <a class="btn btn-line" href="./Resume/TEJAS_SHIVA_KUMAR_RESUME.pdf" target="_blank" rel="noopener">Download CV</a>
           </div>
         </div>
 
-        <div class="about-text-col reveal-right">
-          <p class="about-bio" id="about-bio"></p>
-
-          <div class="about-meta">
-            <div class="meta-row">
-              <span class="meta-label"><i class="fa-solid fa-envelope"></i> Email</span>
-              <a href="mailto:tejasshivakumar104@gmail.com" class="meta-value link">tejasshivakumar104@gmail.com</a>
+        <figure class="lab" aria-labelledby="lab-cap">
+          <div class="lab-head">
+            <div class="seg" role="group" aria-label="View">
+              <button type="button" class="seg-btn" data-view="pixels" aria-pressed="false">Pixels</button>
+              <button type="button" class="seg-btn" data-view="graph" aria-pressed="true">Graph</button>
             </div>
-            <div class="meta-row">
-              <span class="meta-label"><i class="fa-solid fa-phone"></i> Phone</span>
-              <span class="meta-value">+353 894 895 290</span>
-            </div>
-            <div class="meta-row">
-              <span class="meta-label"><i class="fa-solid fa-graduation-cap"></i> Education</span>
-              <span class="meta-value">MSc Computing, DCU</span>
-            </div>
-            <div class="meta-row">
-              <span class="meta-label"><i class="fa-solid fa-map-pin"></i> Location</span>
-              <span class="meta-value">Dublin, Ireland</span>
+            <div class="lab-tools">
+              <button type="button" class="btn btn-small btn-teal" id="predict">Predict missing links</button>
+              <button type="button" class="btn btn-small btn-line" id="clear">Clear</button>
             </div>
           </div>
+          <canvas id="lab" aria-label="Drawing area. Drag to draw a crack; it is converted into a graph of nodes and edges." role="img"></canvas>
+          <div class="legend" aria-hidden="true">
+            <span><i class="sw sw-end"></i>Endpoint</span>
+            <span><i class="sw sw-mid"></i>Segment</span>
+            <span><i class="sw sw-jct"></i>Junction</span>
+            <span><i class="sw sw-pred"></i>Predicted link</span>
+          </div>
+          <figcaption id="lab-cap">
+            <strong>Draw a crack.</strong> Drag across the surface and it becomes a graph. Press predict to guess where it joins up.
+            <span class="stats" id="stats" aria-live="polite"></span>
+          </figcaption>
+        </figure>
+      </div>
+    </section>
 
-          <div class="about-stats" id="about-stats"></div>
+    <!-- WORK -->
+    <section class="band" id="work">
+      <div class="wrap">
+        <h2 class="h2">Projects</h2>
+        <p class="sub">Pick one to see how it works.</p>
+
+        <div class="explorer">
+          <div class="tabs" role="tablist" aria-label="Projects">
+            <button role="tab" id="tab-portway" aria-controls="p-portway" aria-selected="true" class="tab" data-c="violet">
+              <span class="tab-name">Portway</span>
+              <span class="tab-meta">Java, Spring Boot, LLM</span>
+            </button>
+            <button role="tab" id="tab-topo" aria-controls="p-topo" aria-selected="false" tabindex="-1" class="tab" data-c="coral">
+              <span class="tab-name">From Pixels to Topology</span>
+              <span class="tab-meta">GNNs, AICS 2026 poster</span>
+            </button>
+            <button role="tab" id="tab-detect" aria-controls="p-detect" aria-selected="false" tabindex="-1" class="tab" data-c="teal">
+              <span class="tab-name">AI Image Detector</span>
+              <span class="tab-meta">CLIP, DINOv2, ensembles</span>
+            </button>
+            <button role="tab" id="tab-mark" aria-controls="p-mark" aria-selected="false" tabindex="-1" class="tab" data-c="yellow">
+              <span class="tab-name">CrackMark</span>
+              <span class="tab-meta">Annotation, online learning</span>
+            </button>
+          </div>
+
+          <!-- Portway -->
+          <article role="tabpanel" id="p-portway" aria-labelledby="tab-portway" class="panel" data-c="violet">
+            <div class="panel-text">
+              <h3>Portway</h3>
+              <p class="kicker">A .NET to Spring Boot migration assistant</p>
+              <p>Teams moving from .NET to Java usually rewrite by hand, and asking an LLM to translate whole files gives code nobody can trust. Portway parses C# with ANTLR into a language-neutral model, translates it with tested rules, and calls an LLM only for the method bodies the rules can't handle. Every generated file is compiled, and anything that fails becomes a clearly marked stub for a human.</p>
+              <ul class="facts">
+                <li><b>14 of 16</b> method bodies on the sample API translated by rules alone</li>
+                <li>The generated app runs against PostgreSQL</li>
+                <li>Java 21, Spring Boot 3.5, Docker, GitHub Actions CI</li>
+              </ul>
+              <a class="btn btn-ink btn-small" href="https://github.com/Tejasshivakumar/dotnet-to-spring" target="_blank" rel="noopener">View on GitHub</a>
+            </div>
+            <div class="panel-visual">
+              <div class="code">
+                <div class="code-tabs" role="group" aria-label="Show code">
+                  <button type="button" class="code-tab" data-lang="cs" aria-pressed="true">C# input</button>
+                  <button type="button" class="code-tab" data-lang="java" aria-pressed="false">Java output</button>
+                </div>
+<pre class="code-body" data-lang="cs"><code><span class="k">public</span> List&lt;<span class="t">string</span>&gt; TopCustomers(<span class="t">int</span> count)
+{
+    <span class="k">return</span> _orders
+        .OrderByDescending(o =&gt; o.Quantity)
+        .Select(o =&gt; o.Customer)
+        .Distinct()
+        .Take(count)
+        .ToList();
+}
+
+<span class="k">public bool</span> AnyLarge(<span class="t">int</span> threshold) =&gt;
+    _orders.Any(o =&gt; o.Quantity &gt; threshold);</code></pre>
+<pre class="code-body" data-lang="java" hidden><code><span class="k">public</span> List&lt;<span class="t">String</span>&gt; topCustomers(<span class="t">int</span> count) {
+  <span class="k">return</span> orders.stream()
+      .sorted(Comparator.comparing(o -&gt; o.getQuantity(),
+              Comparator.reverseOrder()))
+      .map(o -&gt; o.getCustomer())
+      .distinct()
+      .limit(count)
+      .toList();
+}
+
+<span class="k">public boolean</span> anyLarge(<span class="t">int</span> threshold) {
+  <span class="k">return</span> orders.stream().anyMatch(o -&gt; o.getQuantity() &gt; threshold);
+}</code></pre>
+                <p class="code-note">Real output from Portway's LINQ test case. Rules, not an LLM, produced this.</p>
+              </div>
+            </div>
+          </article>
+
+          <!-- Topology -->
+          <article role="tabpanel" id="p-topo" aria-labelledby="tab-topo" class="panel" data-c="coral" hidden>
+            <div class="panel-text">
+              <h3>From Pixels to Topology</h3>
+              <p class="kicker">MSc practicum with Aishwarya Shekar, accepted as a poster at AICS 2026</p>
+              <p>Crack masks tell you which pixels are damaged, but not how the damage connects. We segmented cracks with a U-Net that has a Vision GNN in its bottleneck, skeletonised the masks into graphs, and trained graph neural networks to find nodes with a hidden connection after 20% of edges were removed.</p>
+              <ul class="facts">
+                <li>4,769 road images from 6 public sources, deduplicated</li>
+                <li>Segmentation: 0.63 crack IoU, 0.77 Dice</li>
+                <li>GINE beat a structure-blind MLP by <b>47%</b> on node prediction</li>
+              </ul>
+              <div class="row">
+                <a class="btn btn-ink btn-small" href="https://github.com/Tejasshivakumar/crack-topology-gnn" target="_blank" rel="noopener">View on GitHub</a>
+                <a class="btn btn-line btn-small" href="#top">Try the demo</a>
+              </div>
+            </div>
+            <div class="panel-visual">
+              <figure class="chart" aria-labelledby="chart-cap">
+                <figcaption id="chart-cap">Node prediction, average precision (higher is better)</figcaption>
+                <div class="bars" id="bars"></div>
+                <p class="chart-note">The MLP sees the same node features but no graph. Every point above it comes from using the crack's structure.</p>
+              </figure>
+            </div>
+          </article>
+
+          <!-- Detector -->
+          <article role="tabpanel" id="p-detect" aria-labelledby="tab-detect" class="panel" data-c="teal" hidden>
+            <div class="panel-text">
+              <h3>AI-Generated Image Detector</h3>
+              <p class="kicker">DCU 2026 machine learning challenge</p>
+              <p>Is a photo real or made by a generator? The detector combines what large vision models see (CLIP and DINOv2 embeddings) with forensic traces that generators leave behind: frequency spectrum, error levels and sensor noise. A stack of logistic regression and residual MLPs makes the final call.</p>
+              <ul class="facts">
+                <li>Out-of-fold <b>F1 0.917</b>, ROC-AUC 0.972</li>
+                <li>4,800 images, threshold tuned on out-of-fold predictions</li>
+              </ul>
+              <a class="btn btn-ink btn-small" href="https://github.com/Tejasshivakumar/AI-Image-Detector" target="_blank" rel="noopener">View on GitHub</a>
+            </div>
+            <div class="panel-visual">
+              <figure class="matrix" aria-labelledby="mx-cap">
+                <figcaption id="mx-cap">Confusion matrix, out-of-fold. Tap a cell.</figcaption>
+                <div class="mx">
+                  <span class="mx-corner"></span>
+                  <span class="mx-col">Called real</span>
+                  <span class="mx-col">Called AI</span>
+                  <span class="mx-row">Real</span>
+                  <button type="button" class="mx-cell good" data-n="2263" data-tip="Real photos correctly passed: 91% of real images.">2,263</button>
+                  <button type="button" class="mx-cell bad" data-n="222" data-tip="Real photos wrongly flagged as AI: 8.9%.">222</button>
+                  <span class="mx-row">AI</span>
+                  <button type="button" class="mx-cell bad" data-n="166" data-tip="AI images that slipped through: 7.2%.">166</button>
+                  <button type="button" class="mx-cell good" data-n="2149" data-tip="AI images caught: 93% of generated images.">2,149</button>
+                </div>
+                <p class="mx-tip" id="mx-tip" aria-live="polite">Green cells are correct calls, coral cells are mistakes.</p>
+              </figure>
+            </div>
+          </article>
+
+          <!-- CrackMark -->
+          <article role="tabpanel" id="p-mark" aria-labelledby="tab-mark" class="panel" data-c="yellow" hidden>
+            <div class="panel-text">
+              <h3>CrackMark</h3>
+              <p class="kicker">Built with a collaborator</p>
+              <p>Labelling cracks by hand is slow. CrackMark loads a folder of road photos, proposes a crack mask from the trained segmentation model, and lets you correct it with a brush. Each correction fine-tunes the model in the background, so the suggestions get better as you work.</p>
+              <ul class="facts">
+                <li>Runs in the browser with a Python model server</li>
+                <li>Per-blob mask thinning to keep thin cracks thin</li>
+              </ul>
+              <a class="btn btn-ink btn-small" href="https://github.com/Tejasshivakumar/Supervised_Segmentation" target="_blank" rel="noopener">View on GitHub</a>
+            </div>
+            <div class="panel-visual">
+              <img class="shot" src="./Images/crackmark-editor.jpg" alt="CrackMark editor with a road photo and a detected crack mask overlaid" loading="lazy" width="1200" height="589">
+            </div>
+          </article>
         </div>
       </div>
-    </div>
-  </section>
+    </section>
 
-  <!-- ═══════════════════════════════════════════════ EXPERIENCE -->
-  <section id="experience" class="section section-alt">
-    <div class="container">
-      <div class="section-header reveal">
-        <span class="section-tag">02 — Experience</span>
-        <h2 class="section-title">Education &amp; Work</h2>
-      </div>
-
-      <div class="timeline" id="timeline"></div>
-    </div>
-  </section>
-
-  <!-- ══════════════════════════════════════════════════ SKILLS -->
-  <section id="skills" class="section">
-    <div class="container">
-      <div class="section-header reveal">
-        <span class="section-tag">03 — Skills</span>
-        <h2 class="section-title">Tech Stack</h2>
-      </div>
-
-      <div class="skills-grid" id="skills-grid"></div>
-    </div>
-  </section>
-
-  <!-- ════════════════════════════════════════════════ PROJECTS -->
-  <section id="projects" class="section section-alt">
-    <div class="container">
-      <div class="section-header reveal">
-        <span class="section-tag">04 — Projects</span>
-        <h2 class="section-title">Featured Work</h2>
-      </div>
-
-      <div class="projects-list" id="projects-list"></div>
-    </div>
-  </section>
-
-  <!-- ══════════════════════════════════════════════ ACHIEVEMENTS -->
-  <section id="achievements" class="section">
-    <div class="container">
-      <div class="section-header reveal">
-        <span class="section-tag">05 — Achievements</span>
-        <h2 class="section-title">Awards &amp; Certs</h2>
-      </div>
-
-      <div class="ach-row">
-        <div class="ach-col">
-          <h3 class="ach-col-title"><i class="fa-solid fa-trophy"></i> Competitions</h3>
-          <div class="hackathons-list" id="hackathons-list"></div>
+    <!-- ABOUT + EXPERIENCE -->
+    <section class="section" id="experience">
+      <div class="wrap about">
+        <div class="portrait">
+          <img src="./Images/tejas-520.png" alt="Tejas Shiva Kumar" width="520" height="488">
         </div>
-
-        <div class="ach-col">
-          <h3 class="ach-col-title"><i class="fa-solid fa-certificate"></i> Certifications</h3>
-          <div class="certs-list" id="certs-list"></div>
+        <div class="about-text">
+          <h2 class="h2">Where I've been</h2>
+          <p>I started on .NET at AceMicromatic in Bengaluru, writing C# and SQL Server code for internal systems. I came to Dublin for the MSc to move into AI/ML, and I've been building in Java and Spring Boot since. I like problems where a model and solid engineering have to work together.</p>
+          <ol class="road">
+            <li>
+              <span class="when">2025 to 2026</span>
+              <h3>MSc Computing (Data Analytics)</h3>
+              <p class="where">Dublin City University, 2:1</p>
+              <p>Practicum on graph neural networks for crack topology, accepted at AICS 2026. Modules in statistics, data analytics, and cloud and distributed systems.</p>
+            </li>
+            <li>
+              <span class="when">Aug 2023 to May 2024</span>
+              <h3>Software Engineer Trainee</h3>
+              <p class="where">AceMicromatic Manufacturing Intelligence Technologies, Bengaluru</p>
+              <p>ASP.NET web applications in C#, JavaScript and SQL Server. Part of the team that built a visitor management system to replace a paper process. Led a dashboard redesign and tuned stored procedures.</p>
+            </li>
+            <li>
+              <span class="when">2019 to 2023</span>
+              <h3>BE Information Science and Engineering</h3>
+              <p class="where">Visvesvaraya Technological University, CGPA 7.76</p>
+              <p>Organised departmental tech events and started competitive coding sessions. Won a technical competition with a voice-controlled home automation system.</p>
+            </li>
+            <li>
+              <span class="when">Sept to Nov 2022</span>
+              <h3>AI and ML Intern</h3>
+              <p class="where">IBM SkillsBuild with Edunet Foundation</p>
+              <p>Eight weeks on sign language recognition with computer vision.</p>
+            </li>
+          </ol>
         </div>
       </div>
-    </div>
-  </section>
+    </section>
 
-  <!-- ══════════════════════════════════════════════════ CONTACT -->
-  <section id="contact" class="section section-alt">
-    <div class="container">
-      <div class="section-header reveal">
-        <span class="section-tag">06 — Contact</span>
-        <h2 class="section-title">Get In Touch</h2>
-        <p class="section-sub">Interested in working together? Send me a message and I'll get back to you.</p>
-      </div>
-
-      <div class="contact-grid">
-        <div class="contact-info reveal-left">
-          <h3>Let's connect</h3>
-          <p>Whether it's a job opportunity, collaboration, or just a conversation — I'm always open. Based in Dublin, available globally for remote roles.</p>
-
-          <div class="contact-links" id="contact-links"></div>
+    <!-- SKILLS -->
+    <section class="band" id="skills">
+      <div class="wrap">
+        <h2 class="h2">What I work with</h2>
+        <div class="skills">
+          <div class="skill-group" data-c="violet">
+            <h3>Backend</h3>
+            <ul class="chips"><li>Java</li><li>Spring Boot</li><li>Maven</li><li>REST APIs</li><li>C# and ASP.NET</li><li>PostgreSQL</li><li>SQL Server</li><li>Docker</li><li>GitHub Actions</li></ul>
+          </div>
+          <div class="skill-group" data-c="coral">
+            <h3>AI and ML</h3>
+            <ul class="chips"><li>PyTorch</li><li>PyTorch Geometric</li><li>Lightning</li><li>scikit-learn</li><li>OpenCV</li><li>SAM2</li><li>Hugging Face</li><li>LLM integration</li></ul>
+          </div>
+          <div class="skill-group" data-c="teal">
+            <h3>Graph learning</h3>
+            <ul class="chips"><li>GINE</li><li>GraphSAGE</li><li>GAT</li><li>GCN</li><li>Vision GNN</li><li>Link prediction</li><li>NetworkX</li></ul>
+          </div>
+          <div class="skill-group" data-c="yellow">
+            <h3>Also</h3>
+            <ul class="chips"><li>Python</li><li>TypeScript</li><li>JavaScript</li><li>Git</li><li>ANTLR</li><li>Data analytics</li></ul>
+          </div>
         </div>
 
-        <form class="contact-form reveal-right" id="contact-form" novalidate>
-          <div class="form-row">
-            <div class="form-field">
-              <label for="cf-name">Name</label>
-              <input type="text" id="cf-name" name="name" placeholder="Your name" required />
-            </div>
-            <div class="form-field">
-              <label for="cf-email">Email</label>
-              <input type="email" id="cf-email" name="email" placeholder="you@company.com" required />
-            </div>
+        <div class="extras">
+          <div>
+            <h3>Recognition</h3>
+            <ul class="list">
+              <li><b>AICS 2026</b> poster: From Pixels to Topology</li>
+              <li><b>Winner</b>, AI Movie Making Challenge, Dublin, 2025</li>
+              <li><b>Top 15</b>, Colosseum Solana hackathon, 2026</li>
+            </ul>
           </div>
-          <div class="form-field">
-            <label for="cf-subject">Subject</label>
-            <input type="text" id="cf-subject" name="subject" placeholder="Job opportunity / Collaboration / Other" />
+          <div>
+            <h3>Certificates</h3>
+            <ul class="list">
+              <li><a href="https://drive.google.com/file/d/1e-c32gQNeFbH3wAjfErXRpJmpHX6T6K4/view?usp=sharing" target="_blank" rel="noopener">NPTEL Elite, Python and DSA</a>, IIT Madras</li>
+              <li><a href="https://drive.google.com/file/d/1kc8i8HQdBZ5Iz8Nn00Pr4BGYvAguLDYe/view?usp=sharing" target="_blank" rel="noopener">Python Programming Masterclass</a>, Udemy</li>
+              <li>IBM SkillsBuild AI and ML certificate</li>
+              <li><a href="https://leetcode.com/u/tejasshivakumar2001/" target="_blank" rel="noopener">LeetCode</a> 50-day streak badge</li>
+            </ul>
           </div>
-          <div class="form-field">
-            <label for="cf-message">Message</label>
-            <textarea id="cf-message" name="message" rows="5" placeholder="Tell me more..." required></textarea>
-          </div>
-          <button type="submit" class="btn btn-primary full-width">
-            <i class="fa-solid fa-paper-plane"></i> Send Message
-          </button>
-          <div class="form-success" id="form-success">
-            <i class="fa-solid fa-circle-check"></i> Message sent! I'll get back to you soon.
-          </div>
-        </form>
+        </div>
       </div>
-    </div>
-  </section>
+    </section>
 
-  <!-- ══════════════════════════════════════════════════ FOOTER -->
-  <footer class="footer">
-    <div class="container footer-inner">
-      <p class="footer-logo">TSK<span class="logo-dot">.</span></p>
-      <p class="footer-copy" id="footer-copy"></p>
-      <div class="footer-socials" id="footer-socials"></div>
-    </div>
+    <!-- CONTACT -->
+    <section class="contact" id="contact">
+      <div class="wrap contact-inner">
+        <h2 class="contact-title">Let's talk.</h2>
+        <p>I'm in Dublin and available now for graduate software engineering, AI/ML engineering and research assistant roles.</p>
+        <div class="mail">
+          <span class="mail-addr" id="mail">tejasshivakumar104@gmail.com</span>
+          <button type="button" class="btn btn-ink btn-small" id="copy">Copy email</button>
+        </div>
+        <ul class="links">
+          <li><a href="https://www.linkedin.com/in/tejas-shiva-kumar-51940a24b" target="_blank" rel="noopener">LinkedIn</a></li>
+          <li><a href="https://github.com/Tejasshivakumar" target="_blank" rel="noopener">GitHub</a></li>
+          <li><a href="https://leetcode.com/u/tejasshivakumar2001/" target="_blank" rel="noopener">LeetCode</a></li>
+          <li><a href="./Resume/TEJAS_SHIVA_KUMAR_RESUME.pdf" target="_blank" rel="noopener">CV (PDF)</a></li>
+        </ul>
+      </div>
+    </section>
+  </main>
+
+  <footer class="foot">
+    <div class="wrap">Tejas Shiva Kumar, Dublin, 2026</div>
   </footer>
 
-  <a href="#home" class="back-top" id="back-top" aria-label="Back to top">
-    <i class="fa-solid fa-arrow-up"></i>
-  </a>
-
-  <script src="./config.js"></script>
   <script src="./script.js"></script>
 </body>
 </html>

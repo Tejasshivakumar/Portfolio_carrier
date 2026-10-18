@@ -1,413 +1,468 @@
-/* =========================================================
-   Portfolio Script — Tejas Shiva Kumar
-   ========================================================= */
+(function () {
+  'use strict';
+  var root = document.documentElement;
 
-/* ── Theme toggle ────────────────────────────────────────── */
-const root        = document.documentElement;
-const themeToggle = document.getElementById('theme-toggle');
-const iconLight   = document.getElementById('icon-light');
-const iconDark    = document.getElementById('icon-dark');
-
-function setTheme(theme) {
-  root.setAttribute('data-theme', theme);
-  localStorage.setItem('tsk-theme', theme);
-  if (theme === 'dark') {
-    iconLight.style.display = 'none';
-    iconDark.style.display  = '';
-  } else {
-    iconLight.style.display = '';
-    iconDark.style.display  = 'none';
+  /* ---------------- theme ---------------- */
+  function isDark() {
+    var t = root.dataset.theme;
+    if (t) return t === 'dark';
+    return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
   }
-}
+  var themeBtn = document.getElementById('theme');
+  themeBtn.addEventListener('click', function () {
+    var next = isDark() ? 'light' : 'dark';
+    root.dataset.theme = next;
+    try { localStorage.setItem('theme', next); } catch (e) {}
+    lab.retheme();
+  });
+  if (window.matchMedia) {
+    var mq = window.matchMedia('(prefers-color-scheme: dark)');
+    if (mq.addEventListener) mq.addEventListener('change', function () { lab.retheme(); });
+  }
+  function cssVar(name) { return getComputedStyle(root).getPropertyValue(name).trim(); }
 
-const savedTheme = localStorage.getItem('tsk-theme') || 'dark';
-setTheme(savedTheme);
+  /* ---------------- crack-to-graph lab ---------------- */
+  var lab = (function () {
+    var canvas = document.getElementById('lab');
+    var ctx = canvas.getContext('2d');
+    var statsEl = document.getElementById('stats');
+    var W = 0, H = 0, dpr = 1;
+    var texture = null;
+    var nodes = [];   // {x, y} normalised 0..1
+    var edges = [];   // {a, b, w, jit: [..]}
+    var preds = [];   // {a, b}
+    var predT = 1;    // 0..1 draw-in progress
+    var view = 'graph';
+    var drawing = null; // array of px points while dragging
+    var colors = {};
 
-themeToggle.addEventListener('click', () => {
-  const current = root.getAttribute('data-theme');
-  setTheme(current === 'dark' ? 'light' : 'dark');
-  reinitCanvas();
-});
+    function readColors() {
+      colors = {
+        ink: cssVar('--ink'), coral: cssVar('--coral'), violet: cssVar('--violet'),
+        teal: cssVar('--teal'), paper: cssVar('--paper'),
+        concrete: isDark() ? '#2B2E34' : '#C7CACF',
+        crack: isDark() ? '#0B0C0E' : '#2A2D33'
+      };
+    }
 
-/* ── Hero canvas (particle network) ─────────────────────── */
-const canvas = document.getElementById('hero-canvas');
-const ctx    = canvas.getContext('2d');
-let W, H, pts = [];
-let animId;
+    function makeTexture() {
+      var t = document.createElement('canvas');
+      t.width = Math.max(1, Math.round(W * dpr));
+      t.height = Math.max(1, Math.round(H * dpr));
+      var c = t.getContext('2d');
+      c.fillStyle = colors.concrete;
+      c.fillRect(0, 0, t.width, t.height);
+      var n = Math.round(t.width * t.height / 90);
+      var dark = isDark();
+      var seed = 7;
+      function rnd() { seed = (seed * 16807) % 2147483647; return seed / 2147483647; }
+      for (var i = 0; i < n; i++) {
+        var x = rnd() * t.width, y = rnd() * t.height;
+        var s = rnd();
+        var light = s > 0.5;
+        var a = 0.05 + rnd() * 0.12;
+        c.fillStyle = light ? (dark ? 'rgba(255,255,255,' + a + ')' : 'rgba(255,255,255,' + (a + .1) + ')')
+                            : 'rgba(0,0,0,' + a + ')';
+        var r = (rnd() < 0.03 ? 2.5 + rnd() * 3 : 0.6 + rnd() * 1.2) * dpr;
+        c.beginPath(); c.arc(x, y, r, 0, Math.PI * 2); c.fill();
+      }
+      texture = t;
+    }
 
-function resizeCanvas() {
-  W = canvas.width  = canvas.offsetWidth;
-  H = canvas.height = canvas.offsetHeight;
-}
+    function resize() {
+      var rect = canvas.getBoundingClientRect();
+      dpr = Math.min(window.devicePixelRatio || 1, 2);
+      W = rect.width; H = rect.height;
+      canvas.width = Math.round(W * dpr);
+      canvas.height = Math.round(H * dpr);
+      makeTexture();
+      draw();
+    }
 
-function makePoint() {
-  return {
-    x:  Math.random() * W,
-    y:  Math.random() * H,
-    vx: (Math.random() - 0.5) * 0.4,
-    vy: (Math.random() - 0.5) * 0.4,
-    r:  Math.random() * 1.8 + 0.6,
-  };
-}
+    function px(n) { return { x: n.x * W, y: n.y * H }; }
+    function scale() { return W / 560; }
 
-function initPoints() {
-  pts = Array.from({ length: 70 }, makePoint);
-}
+    function degree() {
+      var d = new Array(nodes.length).fill(0);
+      edges.forEach(function (e) { d[e.a]++; d[e.b]++; });
+      return d;
+    }
 
-function getColors() {
-  const dark = root.getAttribute('data-theme') === 'dark';
-  return {
-    dot:  dark ? 'rgba(124,106,245,0.55)' : 'rgba(85,72,224,0.3)',
-    line: dark ? 'rgba(124,106,245,0.12)' : 'rgba(85,72,224,0.08)',
-  };
-}
+    function nearestNode(p, maxDist) {
+      var best = -1, bd = maxDist;
+      nodes.forEach(function (n, i) {
+        var q = px(n), d = Math.hypot(q.x - p.x, q.y - p.y);
+        if (d < bd) { bd = d; best = i; }
+      });
+      return best;
+    }
 
-function drawCanvas() {
-  ctx.clearRect(0, 0, W, H);
-  const { dot, line } = getColors();
-  const CONNECT = 130;
+    function addNode(p) { nodes.push({ x: p.x / W, y: p.y / H }); return nodes.length - 1; }
+    function addEdge(a, b, w) {
+      if (a === b) return;
+      for (var i = 0; i < edges.length; i++) {
+        var e = edges[i];
+        if ((e.a === a && e.b === b) || (e.a === b && e.b === a)) return;
+      }
+      var jit = [];
+      for (var k = 0; k < 4; k++) jit.push((Math.random() - 0.5));
+      edges.push({ a: a, b: b, w: w, jit: jit });
+    }
 
-  for (let i = 0; i < pts.length; i++) {
-    const p = pts[i];
-    p.x += p.vx;
-    p.y += p.vy;
-    if (p.x < 0 || p.x > W) p.vx *= -1;
-    if (p.y < 0 || p.y > H) p.vy *= -1;
+    function resample(points, step) {
+      var out = [points[0]];
+      var acc = 0;
+      for (var i = 1; i < points.length; i++) {
+        var p = points[i - 1], q = points[i];
+        var d = Math.hypot(q.x - p.x, q.y - p.y);
+        acc += d;
+        if (acc >= step) { out.push(q); acc = 0; }
+      }
+      var last = points[points.length - 1];
+      var tail = out[out.length - 1];
+      if (Math.hypot(last.x - tail.x, last.y - tail.y) > step * 0.4) out.push(last);
+      else out[out.length - 1] = last;
+      return out;
+    }
 
-    ctx.beginPath();
-    ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-    ctx.fillStyle = dot;
-    ctx.fill();
+    function addStroke(points) {
+      if (points.length < 2) return;
+      var step = Math.max(16, W * 0.045);
+      var snap = Math.max(14, W * 0.035);
+      var pts = resample(points, step);
+      if (pts.length < 2) return;
+      var w = (1.6 + Math.random() * 2.2);
+      var prev = null;
+      pts.forEach(function (p, i) {
+        var idx = -1;
+        if (i === 0 || i === pts.length - 1) idx = nearestNode(p, snap);
+        if (idx === -1) idx = addNode(p);
+        if (prev !== null) addEdge(prev, idx, w * (0.75 + Math.random() * 0.5));
+        prev = idx;
+      });
+      preds = [];
+      updateStats();
+      draw();
+    }
 
-    for (let j = i + 1; j < pts.length; j++) {
-      const q = pts[j];
-      const dx = p.x - q.x;
-      const dy = p.y - q.y;
-      const dist = Math.sqrt(dx * dx + dy * dy);
-      if (dist < CONNECT) {
-        ctx.beginPath();
-        ctx.moveTo(p.x, p.y);
-        ctx.lineTo(q.x, q.y);
-        ctx.strokeStyle = line;
-        ctx.lineWidth   = 1;
-        ctx.globalAlpha = 1 - dist / CONNECT;
+    function hopsWithin(src, maxHops) {
+      var adj = nodes.map(function () { return []; });
+      edges.forEach(function (e) { adj[e.a].push(e.b); adj[e.b].push(e.a); });
+      var seen = {}; seen[src] = 0;
+      var q = [src];
+      while (q.length) {
+        var u = q.shift();
+        if (seen[u] >= maxHops) continue;
+        adj[u].forEach(function (v) { if (!(v in seen)) { seen[v] = seen[u] + 1; q.push(v); } });
+      }
+      return { seen: seen, adj: adj };
+    }
+
+    function predict() {
+      preds = [];
+      var deg = degree();
+      var R = W * 0.32;
+      var used = {};
+      nodes.forEach(function (n, i) {
+        if (deg[i] !== 1) return;
+        var h = hopsWithin(i, 5);
+        var nb = h.adj[i][0];
+        var p = px(n), pn = px(nodes[nb]);
+        var dx = p.x - pn.x, dy = p.y - pn.y, dl = Math.hypot(dx, dy) || 1;
+        dx /= dl; dy /= dl;
+        var best = -1, bs = 0.3;
+        nodes.forEach(function (m, j) {
+          if (j === i || (j in h.seen)) return;
+          var q = px(m), vx = q.x - p.x, vy = q.y - p.y, d = Math.hypot(vx, vy);
+          if (d > R || d < 1) return;
+          var cos = (vx * dx + vy * dy) / d;
+          var s = cos * (1 - d / R) + (deg[j] === 1 ? 0.15 : 0);
+          if (s > bs) { bs = s; best = j; }
+        });
+        if (best !== -1) {
+          var key = Math.min(i, best) + '-' + Math.max(i, best);
+          if (!used[key]) { used[key] = true; preds.push({ a: i, b: best }); }
+        }
+      });
+      predT = 0;
+      var start = null;
+      var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if (reduce) { predT = 1; draw(); updateStats(); return; }
+      function tick(ts) {
+        if (start === null) start = ts;
+        predT = Math.min(1, (ts - start) / 650);
+        draw();
+        if (predT < 1) requestAnimationFrame(tick);
+      }
+      requestAnimationFrame(tick);
+      updateStats();
+    }
+
+    function drawCrack(alpha) {
+      var s = scale();
+      ctx.save();
+      ctx.globalAlpha = alpha;
+      ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+      edges.forEach(function (e) {
+        var a = px(nodes[e.a]), b = px(nodes[e.b]);
+        var mx = b.x - a.x, my = b.y - a.y, len = Math.hypot(mx, my) || 1;
+        var nx = -my / len, ny = mx / len;
+        var amp = Math.min(6, len * 0.12) * s;
+        // light lip
+        ctx.strokeStyle = isDark() ? 'rgba(255,255,255,.07)' : 'rgba(255,255,255,.45)';
+        ctx.lineWidth = (e.w + 2.2) * s;
+        path(a, mx, my, nx, ny, amp, e.jit, 0.8);
         ctx.stroke();
-        ctx.globalAlpha = 1;
+        ctx.strokeStyle = colors.crack;
+        ctx.lineWidth = e.w * s;
+        path(a, mx, my, nx, ny, amp, e.jit, 0);
+        ctx.stroke();
+      });
+      ctx.restore();
+    }
+    function path(a, mx, my, nx, ny, amp, jit, off) {
+      ctx.beginPath();
+      ctx.moveTo(a.x + nx * off, a.y + ny * off);
+      for (var k = 1; k <= 4; k++) {
+        var t = k / 5;
+        ctx.lineTo(a.x + mx * t + nx * (jit[k - 1] * amp + off), a.y + my * t + ny * (jit[k - 1] * amp + off));
+      }
+      ctx.lineTo(a.x + mx + nx * off, a.y + my + ny * off);
+    }
+
+    function drawGraph() {
+      var s = scale();
+      var deg = degree();
+      ctx.save();
+      ctx.lineCap = 'round';
+      ctx.strokeStyle = colors.ink;
+      ctx.globalAlpha = 0.85;
+      ctx.lineWidth = 2 * s;
+      edges.forEach(function (e) {
+        var a = px(nodes[e.a]), b = px(nodes[e.b]);
+        ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
+      });
+      ctx.globalAlpha = 1;
+      // predictions
+      if (preds.length) {
+        ctx.strokeStyle = colors.teal;
+        ctx.lineWidth = 3 * s;
+        ctx.setLineDash([7 * s, 6 * s]);
+        preds.forEach(function (p) {
+          var a = px(nodes[p.a]), b = px(nodes[p.b]);
+          ctx.beginPath(); ctx.moveTo(a.x, a.y);
+          ctx.lineTo(a.x + (b.x - a.x) * predT, a.y + (b.y - a.y) * predT);
+          ctx.stroke();
+        });
+        ctx.setLineDash([]);
+      }
+      nodes.forEach(function (n, i) {
+        var p = px(n), d = deg[i];
+        ctx.beginPath();
+        if (d >= 3) {
+          var r = 7 * s;
+          ctx.fillStyle = colors.violet;
+          roundRect(p.x - r, p.y - r, r * 2, r * 2, 3 * s);
+          ctx.fill();
+          ctx.lineWidth = 2 * s; ctx.strokeStyle = colors.paper; ctx.stroke();
+        } else if (d === 1 || d === 0) {
+          ctx.arc(p.x, p.y, 6.5 * s, 0, Math.PI * 2);
+          ctx.fillStyle = colors.coral; ctx.fill();
+          ctx.lineWidth = 2 * s; ctx.strokeStyle = colors.paper; ctx.stroke();
+        } else {
+          ctx.arc(p.x, p.y, 3.4 * s, 0, Math.PI * 2);
+          ctx.fillStyle = colors.ink; ctx.fill();
+        }
+      });
+      ctx.restore();
+    }
+    function roundRect(x, y, w, h, r) {
+      ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r);
+      ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath();
+    }
+
+    function draw() {
+      if (!W) return;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, W, H);
+      if (texture) ctx.drawImage(texture, 0, 0, W, H);
+      drawCrack(view === 'graph' ? 0.35 : 1);
+      if (view === 'graph') drawGraph();
+      if (drawing && drawing.length > 1) {
+        ctx.save();
+        ctx.strokeStyle = colors.crack; ctx.lineWidth = 3 * scale(); ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+        ctx.beginPath(); ctx.moveTo(drawing[0].x, drawing[0].y);
+        drawing.forEach(function (p) { ctx.lineTo(p.x, p.y); });
+        ctx.stroke(); ctx.restore();
+      }
+      if (!nodes.length && !drawing) {
+        ctx.save();
+        ctx.fillStyle = colors.ink; ctx.globalAlpha = .6;
+        ctx.font = '700 ' + Math.round(18 * Math.max(.8, scale())) + 'px "Overpass", sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('Drag here to draw a crack', W / 2, H / 2);
+        ctx.restore();
       }
     }
+
+    function updateStats() {
+      var deg = degree();
+      var ends = deg.filter(function (d) { return d <= 1; }).length;
+      var jct = deg.filter(function (d) { return d >= 3; }).length;
+      if (!nodes.length) { statsEl.textContent = 'Empty surface. Drag to draw a crack.'; return; }
+      statsEl.textContent = nodes.length + ' nodes, ' + edges.length + ' edges, ' + ends + ' endpoints, ' + jct +
+        (jct === 1 ? ' junction' : ' junctions') + (preds.length ? ', ' + preds.length + ' predicted ' + (preds.length === 1 ? 'link' : 'links') : '');
+    }
+
+    function local(ev) {
+      var r = canvas.getBoundingClientRect();
+      return { x: ev.clientX - r.left, y: ev.clientY - r.top };
+    }
+    canvas.addEventListener('pointerdown', function (ev) {
+      ev.preventDefault();
+      canvas.setPointerCapture(ev.pointerId);
+      drawing = [local(ev)];
+      draw();
+    });
+    canvas.addEventListener('pointermove', function (ev) {
+      if (!drawing) return;
+      var p = local(ev), l = drawing[drawing.length - 1];
+      if (Math.hypot(p.x - l.x, p.y - l.y) > 3) { drawing.push(p); draw(); }
+    });
+    function end() {
+      if (!drawing) return;
+      var pts = drawing; drawing = null;
+      if (pts.length > 1) addStroke(pts); else draw();
+    }
+    canvas.addEventListener('pointerup', end);
+    canvas.addEventListener('pointercancel', end);
+
+    document.getElementById('predict').addEventListener('click', predict);
+    document.getElementById('clear').addEventListener('click', function () {
+      nodes = []; edges = []; preds = []; updateStats(); draw();
+    });
+    var segBtns = document.querySelectorAll('.seg-btn');
+    segBtns.forEach(function (b) {
+      b.addEventListener('click', function () {
+        view = b.dataset.view;
+        segBtns.forEach(function (x) { x.setAttribute('aria-pressed', String(x === b)); });
+        draw();
+      });
+    });
+
+    function seed() {
+      // A main transverse crack with a branch, plus a separate fragment the predictor can join.
+      var strokes = [
+        [[.06, .58], [.16, .55], [.27, .58], [.37, .52], [.46, .50], [.55, .53]],
+        [[.37, .52], [.40, .40], [.45, .30], [.47, .19]],
+        [[.37, .52], [.33, .65], [.30, .78], [.25, .90]],
+        [[.68, .54], [.77, .50], [.86, .55], [.95, .50]],
+        [[.86, .55], [.88, .68], [.84, .80]]
+      ];
+      strokes.forEach(function (s) {
+        addStroke(s.map(function (p) { return { x: p[0] * W, y: p[1] * H }; }));
+      });
+    }
+
+    readColors();
+    resize();
+    seed();
+    if (window.ResizeObserver) new ResizeObserver(function () { resize(); }).observe(canvas);
+    else window.addEventListener('resize', resize);
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(draw);
+
+    return {
+      retheme: function () { readColors(); makeTexture(); draw(); }
+    };
+  })();
+
+  /* ---------------- project tabs ---------------- */
+  var tabs = Array.prototype.slice.call(document.querySelectorAll('.tab'));
+  function select(tab, focus) {
+    tabs.forEach(function (t) {
+      var on = t === tab;
+      t.setAttribute('aria-selected', String(on));
+      t.tabIndex = on ? 0 : -1;
+      document.getElementById(t.getAttribute('aria-controls')).hidden = !on;
+    });
+    if (focus) tab.focus();
+    if (tab.id === 'tab-topo') growBars();
+  }
+  tabs.forEach(function (t, i) {
+    t.addEventListener('click', function () { select(t); });
+    t.addEventListener('keydown', function (e) {
+      var k = e.key, n = null;
+      if (k === 'ArrowDown' || k === 'ArrowRight') n = tabs[(i + 1) % tabs.length];
+      if (k === 'ArrowUp' || k === 'ArrowLeft') n = tabs[(i - 1 + tabs.length) % tabs.length];
+      if (k === 'Home') n = tabs[0];
+      if (k === 'End') n = tabs[tabs.length - 1];
+      if (n) { e.preventDefault(); select(n, true); }
+    });
+  });
+
+  /* ---------------- code toggle ---------------- */
+  var codeTabs = document.querySelectorAll('.code-tab');
+  codeTabs.forEach(function (b) {
+    b.addEventListener('click', function () {
+      codeTabs.forEach(function (x) { x.setAttribute('aria-pressed', String(x === b)); });
+      document.querySelectorAll('.code-body').forEach(function (pre) { pre.hidden = pre.dataset.lang !== b.dataset.lang; });
+    });
+  });
+
+  /* ---------------- bar chart ---------------- */
+  var results = [
+    { m: 'MLP', v: 0.341, cls: 'base' },
+    { m: 'GCN', v: 0.342 },
+    { m: 'GAT', v: 0.429 },
+    { m: 'GraphSAGE', v: 0.489 },
+    { m: 'GINE', v: 0.501, cls: 'best' }
+  ];
+  var bars = document.getElementById('bars');
+  results.forEach(function (r) {
+    var row = document.createElement('div');
+    row.className = 'bar' + (r.cls ? ' ' + r.cls : '');
+    row.innerHTML = '<span class="bar-name"></span><span class="bar-track"><span class="bar-fill"></span></span><span class="bar-val"></span>';
+    row.querySelector('.bar-name').textContent = r.m;
+    row.querySelector('.bar-val').textContent = r.v.toFixed(3);
+    row.querySelector('.bar-fill').dataset.w = (r.v / 0.6 * 100).toFixed(1) + '%';
+    bars.appendChild(row);
+  });
+  var grown = false;
+  function growBars() {
+    if (grown) return;
+    grown = true;
+    requestAnimationFrame(function () {
+      bars.querySelectorAll('.bar-fill').forEach(function (f) { f.style.width = f.dataset.w; });
+    });
   }
 
-  animId = requestAnimationFrame(drawCanvas);
-}
-
-function reinitCanvas() {
-  cancelAnimationFrame(animId);
-  drawCanvas();
-}
-
-window.addEventListener('resize', () => { resizeCanvas(); });
-resizeCanvas();
-initPoints();
-drawCanvas();
-
-/* ── Nav: scroll & hamburger ─────────────────────────────── */
-const header    = document.getElementById('header');
-const navMenu   = document.getElementById('nav-menu');
-const hamburger = document.getElementById('nav-hamburger');
-const navLinks  = document.querySelectorAll('.nav-link');
-
-hamburger.addEventListener('click', () => {
-  navMenu.classList.toggle('open');
-  hamburger.classList.toggle('open');
-});
-
-navLinks.forEach(link => {
-  link.addEventListener('click', () => {
-    navMenu.classList.remove('open');
-    hamburger.classList.remove('open');
+  /* ---------------- confusion matrix ---------------- */
+  var cells = document.querySelectorAll('.mx-cell');
+  var tip = document.getElementById('mx-tip');
+  cells.forEach(function (c) {
+    c.setAttribute('aria-pressed', 'false');
+    c.addEventListener('click', function () {
+      cells.forEach(function (x) { x.setAttribute('aria-pressed', String(x === c)); });
+      tip.textContent = c.dataset.tip;
+    });
   });
-});
 
-/* ── Active section highlight & sticky header ───────────── */
-const sections = document.querySelectorAll('section[id]');
-const backTop  = document.getElementById('back-top');
-
-window.addEventListener('scroll', () => {
-  const y = window.scrollY;
-
-  header.classList.toggle('scrolled', y > 60);
-  backTop.classList.toggle('show', y > 400);
-
-  sections.forEach(sec => {
-    const top    = sec.offsetTop - 120;
-    const bottom = top + sec.offsetHeight;
-    const id     = sec.id;
-    const link   = document.querySelector(`.nav-link[href="#${id}"]`);
-    if (link) link.classList.toggle('active', y >= top && y < bottom);
-  });
-});
-
-/* ── Intersection observer (reveal animations) ───────────── */
-const observer = new IntersectionObserver((entries) => {
-  entries.forEach(entry => {
-    if (entry.isIntersecting) {
-      entry.target.classList.add('visible');
-      observer.unobserve(entry.target);
+  /* ---------------- copy email ---------------- */
+  var copyBtn = document.getElementById('copy');
+  var mail = document.getElementById('mail');
+  copyBtn.addEventListener('click', function () {
+    var text = mail.textContent.trim();
+    function done() {
+      copyBtn.textContent = 'Copied';
+      setTimeout(function () { copyBtn.textContent = 'Copy email'; }, 1800);
     }
-  });
-}, { threshold: 0.12 });
-
-document.querySelectorAll(
-  '.reveal, .reveal-left, .reveal-right, ' +
-  '.tl-item, .skill-cat, .proj-card, .hack-card, .cert-card'
-).forEach(el => observer.observe(el));
-
-/* ── Typewriter ──────────────────────────────────────────── */
-function typewriter(el, words) {
-  if (!el || !words?.length) return;
-  let wi = 0, ci = 0, del = false;
-  const TYPE = 90, DEL = 45, PAUSE = 2000;
-
-  (function tick() {
-    const word = words[wi];
-    if (!del) {
-      el.textContent = word.slice(0, ++ci);
-      if (ci === word.length) { del = true; return setTimeout(tick, PAUSE); }
-    } else {
-      el.textContent = word.slice(0, --ci);
-      if (ci === 0) { del = false; wi = (wi + 1) % words.length; }
+    function fallback() {
+      var r = document.createRange(); r.selectNodeContents(mail);
+      var s = window.getSelection(); s.removeAllRanges(); s.addRange(r);
+      copyBtn.textContent = 'Selected, press Ctrl+C';
     }
-    setTimeout(tick, del ? DEL : TYPE);
-  })();
-}
-
-/* ── Social icons helper ─────────────────────────────────── */
-const SOCIAL_DEFS = {
-  github:   { icon: 'fa-brands fa-github',  label: 'GitHub'   },
-  linkedin: { icon: 'fa-brands fa-linkedin', label: 'LinkedIn' },
-  leetcode: { icon: 'fa-solid fa-code',      label: 'LeetCode' },
-  gfg:      { icon: 'fa-solid fa-leaf',      label: 'GeeksforGeeks' },
-};
-
-function buildSocials(container, links, extraClass) {
-  Object.entries(links).forEach(([key, url]) => {
-    if (!url) return;
-    const def = SOCIAL_DEFS[key];
-    if (!def) return;
-    const a = document.createElement('a');
-    a.href    = url;
-    a.target  = '_blank';
-    a.rel     = 'noopener noreferrer';
-    a.title   = def.label;
-    a.setAttribute('aria-label', def.label);
-    a.className = extraClass || 'social-link';
-    a.innerHTML = `<i class="${def.icon}"></i>`;
-    container.appendChild(a);
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(done, fallback);
+    } else { fallback(); }
   });
-}
-
-/* ── Resume download ─────────────────────────────────────── */
-function setupResume(path) {
-  const btn = document.getElementById('resume-btn');
-  if (!btn) return;
-  btn.addEventListener('click', e => {
-    e.preventDefault();
-    const a = document.createElement('a');
-    a.href     = path;
-    a.download = 'Tejas_Shiva_Kumar_Resume.pdf';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-  });
-}
-
-/* ── Contact form (demo) ─────────────────────────────────── */
-function setupForm() {
-  const form    = document.getElementById('contact-form');
-  const success = document.getElementById('form-success');
-  if (!form) return;
-  form.addEventListener('submit', e => {
-    e.preventDefault();
-    success.classList.add('show');
-    form.reset();
-    setTimeout(() => success.classList.remove('show'), 5000);
-  });
-}
-
-/* ── Populate from config ────────────────────────────────── */
-function populate() {
-  const c = config;
-
-  /* Hero */
-  document.getElementById('hero-bio').textContent = c.bio;
-  typewriter(document.getElementById('typewriter'), c.taglines);
-  buildSocials(document.getElementById('hero-socials'), c.social);
-  setupResume(c.resume);
-
-  /* About */
-  document.getElementById('about-bio').textContent = c.bio;
-  const statsEl = document.getElementById('about-stats');
-  c.aboutStats.forEach(s => {
-    const d = document.createElement('div');
-    d.className = 'stat-card';
-    d.innerHTML = `<div class="stat-value">${s.value}</div><div class="stat-label">${s.label}</div>`;
-    statsEl.appendChild(d);
-  });
-
-  /* Experience / timeline */
-  const tl = document.getElementById('timeline');
-  c.experience.forEach((item, i) => {
-    const typeMap  = { education: 'edu', work: 'work', internship: 'intern' };
-    const labelMap = { education: 'Education', work: 'Work Experience', internship: 'Internship' };
-    const iconMap  = { education: 'fa-graduation-cap', work: 'fa-briefcase', internship: 'fa-flask' };
-    const cls      = typeMap[item.type] || 'work';
-    const lbl      = labelMap[item.type] || 'Experience';
-    const ico      = iconMap[item.type] || 'fa-briefcase';
-
-    const div = document.createElement('div');
-    div.className = `tl-item ${cls}`;
-    div.style.transitionDelay = `${i * 0.1}s`;
-    div.innerHTML = `
-      <div class="tl-dot ${cls}"><i class="fa-solid ${ico}"></i></div>
-      <div class="tl-card">
-        <p class="tl-type">${lbl}</p>
-        <h3 class="tl-role">${item.role}</h3>
-        <p class="tl-org">${item.org}</p>
-        <div class="tl-meta">
-          <span class="tl-period"><i class="fa-regular fa-calendar"></i> ${item.period}</span>
-          <span class="tl-location"><i class="fa-solid fa-location-dot"></i> ${item.location}</span>
-          ${item.current ? '<span class="tl-current"><span class="badge-dot"></span> Current</span>' : ''}
-        </div>
-        <p class="tl-desc">${item.desc}</p>
-        <div class="tl-tags">${item.tags.map(t => `<span class="tag">${t}</span>`).join('')}</div>
-      </div>
-    `;
-    tl.appendChild(div);
-    observer.observe(div);
-  });
-
-  /* Skills */
-  const skillsGrid = document.getElementById('skills-grid');
-  c.skillCategories.forEach((cat, i) => {
-    const div = document.createElement('div');
-    div.className = 'skill-cat';
-    div.style.transitionDelay = `${i * 0.08}s`;
-    div.innerHTML = `
-      <div class="skill-cat-header">
-        <div class="skill-cat-icon"><i class="fa-solid ${cat.icon}"></i></div>
-        <span class="skill-cat-name">${cat.category}</span>
-      </div>
-      <div class="skill-pills">${cat.skills.map(s => `<span class="tag">${s}</span>`).join('')}</div>
-    `;
-    skillsGrid.appendChild(div);
-    observer.observe(div);
-  });
-
-  /* Projects */
-  const projList = document.getElementById('projects-list');
-  c.projects.forEach((p, i) => {
-    const card = document.createElement('div');
-    card.className = 'proj-card';
-    card.style.transitionDelay = `${i * 0.12}s`;
-    const isActive = p.status === 'In Progress';
-    const githubLink = p.github
-      ? `<a href="${p.github}" target="_blank" rel="noopener" class="proj-link">
-           <i class="fa-brands fa-github"></i> GitHub
-         </a>`
-      : '';
-    card.innerHTML = `
-      <div class="proj-visual" style="background: linear-gradient(${p.gradient})">
-        <div class="proj-visual-inner">
-          <span class="proj-emoji">💻</span>
-          <p class="proj-visual-label">${p.subtitle}</p>
-        </div>
-      </div>
-      <div class="proj-body">
-        <div class="proj-header">
-          <div>
-            <p class="proj-subtitle">${p.period}</p>
-            <h3 class="proj-title">${p.title}</h3>
-          </div>
-          <span class="proj-status ${isActive ? 'active' : 'done'}">${p.status}</span>
-        </div>
-        <p class="proj-desc">${p.desc}</p>
-        <div class="proj-tags">${p.tags.map(t => `<span class="tag">${t}</span>`).join('')}</div>
-        <div class="proj-links">${githubLink}</div>
-      </div>
-    `;
-    projList.appendChild(card);
-    observer.observe(card);
-  });
-
-  /* Hackathons */
-  const hackList = document.getElementById('hackathons-list');
-  c.hackathons.forEach((h, i) => {
-    const card = document.createElement('div');
-    card.className = `hack-card ${h.result}`;
-    card.style.transitionDelay = `${i * 0.1}s`;
-    card.innerHTML = `
-      <div class="hack-top">
-        <span class="hack-badge ${h.result}">${h.result === 'winner' ? '🏆 Winner' : '🎖️ Top 15 Finalist'}</span>
-        <span class="hack-year">${h.year}</span>
-      </div>
-      <h3 class="hack-title">${h.title}</h3>
-      <p class="hack-org">${h.org}</p>
-      <p class="hack-desc">${h.desc}</p>
-    `;
-    hackList.appendChild(card);
-    observer.observe(card);
-  });
-
-  /* Certifications */
-  const certList = document.getElementById('certs-list');
-  c.certifications.forEach((cert, i) => {
-    const card = document.createElement('div');
-    card.className = 'cert-card';
-    card.style.transitionDelay = `${i * 0.1}s`;
-    const linkHtml = cert.link
-      ? `<a href="${cert.link}" target="_blank" rel="noopener" class="cert-link">
-           View <i class="fa-solid fa-arrow-up-right-from-square"></i>
-         </a>`
-      : '';
-    card.innerHTML = `
-      <div class="cert-icon"><i class="fa-solid fa-certificate"></i></div>
-      <div class="cert-body">
-        <p class="cert-org">${cert.org}</p>
-        <p class="cert-title">${cert.title}</p>
-        <div class="cert-foot">
-          <span class="cert-year">${cert.year}</span>
-          ${linkHtml}
-        </div>
-      </div>
-    `;
-    certList.appendChild(card);
-    observer.observe(card);
-  });
-
-  /* Contact links */
-  const contactLinks = document.getElementById('contact-links');
-  const clData = [
-    { icon: 'fa-solid fa-envelope', text: c.email,   href: `mailto:${c.email}` },
-    { icon: 'fa-solid fa-phone',    text: c.phone,   href: `tel:${c.phone}` },
-    { icon: 'fa-brands fa-github',  text: 'github.com/Tejasshivakumar', href: c.social.github },
-    { icon: 'fa-brands fa-linkedin', text: 'LinkedIn', href: c.social.linkedin },
-  ];
-  clData.forEach(cl => {
-    const a = document.createElement('a');
-    a.href   = cl.href;
-    a.target = cl.href.startsWith('http') ? '_blank' : '';
-    a.rel    = cl.href.startsWith('http') ? 'noopener noreferrer' : '';
-    a.className = 'contact-link-item';
-    a.innerHTML = `<i class="${cl.icon}"></i><span>${cl.text}</span>`;
-    contactLinks.appendChild(a);
-  });
-
-  /* Footer */
-  document.getElementById('footer-copy').textContent =
-    `© ${new Date().getFullYear()} Tejas Shiva Kumar. All rights reserved.`;
-  buildSocials(document.getElementById('footer-socials'), c.social);
-
-  setupForm();
-}
-
-document.addEventListener('DOMContentLoaded', populate);
+})();
