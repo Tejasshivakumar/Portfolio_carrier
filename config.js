@@ -14,7 +14,7 @@ const config = {
     "Scalable Software",
   ],
 
-  bio: `Software Engineer with professional experience in .NET/C# and Python microservices, now pursuing an MSc in Computing (Data Analytics) at Dublin City University. My practicum research applies Graph Neural Networks to spatial road crack analysis — a blend of computer vision, graph ML, and applied research. I bring production-grade engineering discipline to AI problems and am actively targeting roles in backend engineering, AI/ML, and software engineering.`,
+  bio: `Software Engineer with professional experience in .NET/C# and SQL Server, now pursuing an MSc in Computing (Data Analytics) at Dublin City University. My practicum research applies Graph Neural Networks to spatial road crack analysis, a blend of computer vision, graph ML, and applied research. I bring production-grade engineering discipline to AI problems and am actively targeting roles in backend engineering, AI/ML, and software engineering.`,
 
   social: {
     github:   "https://github.com/Tejasshivakumar",
@@ -40,16 +40,6 @@ const config = {
       current:  true,
       desc:     "Advanced coursework in Data Analytics, Statistical Methods, Cloud & Distributed Systems, and Research Methods. Practicum: GNN-based pipeline for spatial analysis of road crack segmentation and propagation prediction.",
       tags:     ["Python", "PyTorch", "GNN", "Data Analytics", "Research"],
-    },
-    {
-      type:     "work",
-      role:     "Backend / Microservices Engineer",
-      org:      "FinoliTech",
-      location: "Remote",
-      period:   "2024",
-      current:  false,
-      desc:     "Built production microservices with Vert.x (reactive, event-driven). Developed API layers with FastAPI and implemented CrewAI agent setups for AI-driven automation workflows.",
-      tags:     ["Vert.x", "FastAPI", "CrewAI", "Python", "Microservices"],
     },
     {
       type:     "work",
@@ -87,17 +77,17 @@ const config = {
     {
       category: "Languages",
       icon: "fa-code",
-      skills: ["Python", "C#", "SQL", "JavaScript", "HTML5", "CSS3"],
+      skills: ["Python", "C#", "Java", "SQL", "JavaScript", "HTML5", "CSS3"],
     },
     {
       category: "Backend & Frameworks",
       icon: "fa-server",
-      skills: ["ASP.NET", "FastAPI", "Vert.x", "MVC", "REST APIs"],
+      skills: ["ASP.NET", "Spring Boot", "MVC", "REST APIs"],
     },
     {
       category: "AI / ML & Deep Learning",
       icon: "fa-brain",
-      skills: ["PyTorch", "PyTorch Geometric", "OpenCV", "scikit-learn", "SAM2", "CrewAI", "NetworkX"],
+      skills: ["PyTorch", "PyTorch Geometric", "OpenCV", "scikit-learn", "SAM2", "NetworkX"],
     },
     {
       category: "Graph Neural Networks",
